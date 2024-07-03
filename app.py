@@ -1,10 +1,9 @@
+import os
 import base64
 import requests
-import openai
+from openai import OpenAI
 from dotenv import load_dotenv
-import os
 
-# Documentation: https://platform.openai.com/docs/guides/vision
 
 # Load environment variables from .env file
 load_dotenv()
@@ -12,11 +11,17 @@ load_dotenv()
 # Get the OpenAI API Key from the environment variable
 api_key = os.getenv('OPENAI_API_KEY')
 
+# Initialize the OpenAI client
+client = OpenAI(
+    api_key=api_key
+)
+
 # Function to encode the image
 def encode_image(image_path):
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode('utf-8')
 
+# Documentation: https://platform.openai.com/docs/guides/vision
 # Function to detect ingredients from the image
 def detect_ingredients_from_image(image_path):
     # Encode the image
@@ -59,13 +64,10 @@ def detect_ingredients_from_image(image_path):
 def generate_recipe(ingredients, prompt):
     full_prompt = f"Here are the ingredients: {ingredients}. {prompt}"
 
-    response = openai.Completion.create(
-        model="text-davinci-003",
-        prompt=full_prompt,
-        max_tokens=500
-    )
-
-    recipe = response.choices[0].text.strip()
+    model = "gpt-3.5-turbo-0125" # gpt-4o
+    response = client.chat.completions.create(model=model,  messages=[{"role": "system", "content": full_prompt}], max_tokens=500)
+    print(response)
+    recipe = response.choices[0].message.content
     return recipe
 
 # Main function
@@ -78,5 +80,12 @@ def main(image_path, prompt):
 
 # Example usage
 image_path = "images/ingredients/01.jfif"
-prompt = "Propose me a recipe using these ingredients."
+prompt = """
+    Suggest a list of recipe list using these ingredients.
+    for each recipe, provide the following details:
+    1) List the ingredients needed for the recipe
+    2) Detailed list of process to make the recipe
+    3) Time required to make the recipe
+    4) Nutritional value of the recipe
+"""
 main(image_path, prompt)
