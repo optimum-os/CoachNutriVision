@@ -64,7 +64,7 @@ def detect_ingredients_from_image(image_path):
 def generate_recipe(ingredients, prompt):
     full_prompt = f"Here are the ingredients: {ingredients}. {prompt}"
 
-    model = "gpt-3.5-turbo-0125" # gpt-4o
+    model = "gpt-3.5-turbo" # gpt-4o
     response = client.chat.completions.create(model=model,  messages=[{"role": "system", "content": full_prompt}], max_tokens=500)
     print(response)
     recipe = response.choices[0].message.content
